@@ -1,1 +1,1 @@
-Visit https://ajasjaleel253.github.io/event-management-test/
+Visit https://ajasjaleel.github.io/event-management-test/
