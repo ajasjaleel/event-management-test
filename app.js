@@ -261,12 +261,6 @@ function renderPrograms() {
   const catF   = document.getElementById("prog-filter-cat").value;
   const typeF  = document.getElementById("prog-filter-type").value;
 
-  // Populate category datalist and filter
-  const cats = [...new Set(state.programs.map(p => p.category))].sort();
-  const catSel = document.getElementById("prog-filter-cat");
-  const cv = catSel.value;
-  catSel.innerHTML = '<option value="">All Categories</option>' + cats.map(c => `<option ${cv === c ? "selected" : ""}>${esc(c)}</option>`).join("");
-  document.getElementById("cat-suggestions").innerHTML = cats.map(c => `<option value="${esc(c)}">`).join("");
 
   const filtered = state.programs.filter(p =>
     (p.name.toLowerCase().includes(search) || p.category.toLowerCase().includes(search)) &&
@@ -538,7 +532,7 @@ function renderParticipants() {
       <td class="text-muted">${i + 1}</td>
       <td class="primary-col">${esc(p.name)}</td>
       <td>${team ? `<span class="badge badge-slate">${esc(team.name)}</span>` : '<span class="text-muted">—</span>'}</td>
-      <td>${esc(p.grade) || '<span class="text-muted">—</span>'}</td>
+      <td>${esc(p.category) || '<span class="text-muted">—</span>'}</td>
       <td>
         <div class="participant-programs">
           ${progs.length ? progs.map(pr => `<span class="prog-chip">${esc(pr.name)}</span>`).join("") : '<span class="text-muted text-sm">None</span>'}
@@ -559,7 +553,7 @@ document.getElementById("btn-add-participant").addEventListener("click", () => {
   document.getElementById("form-participant").reset();
   document.getElementById("part-id").value = "";
   populatePartTeams(null);
-  populatePartPrograms([]);
+  populatePartPrograms([], "");   
   clearErrors("form-participant");
   openModal("modal-participant");
 });
@@ -568,12 +562,12 @@ window._editParticipant = (id) => {
   const p = state.participants.find(x => x.id === id);
   if (!p) return;
   document.getElementById("modal-participant-title").textContent = "Edit Participant";
-  document.getElementById("part-id").value      = id;
-  document.getElementById("part-name").value    = p.name;
-  document.getElementById("part-grade").value   = p.grade   || "";
-  document.getElementById("part-contact").value = p.contact || "";
+  document.getElementById("part-id").value       = id;
+  document.getElementById("part-name").value     = p.name;
+  document.getElementById("part-category").value = p.category || "";
+  document.getElementById("part-contact").value  = p.contact || "";
   populatePartTeams(p.teamId);
-  populatePartPrograms(p.programs || []);
+  populatePartPrograms(p.programs || [], p.category || "");
   clearErrors("form-participant");
   openModal("modal-participant");
 };
@@ -599,13 +593,18 @@ function populatePartTeams(selectedId) {
     state.teams.map(t => `<option value="${t.id}" ${t.id == selectedId ? "selected" : ""}>${esc(t.name)}</option>`).join("");
 }
 
-function populatePartPrograms(selected = []) {
+function populatePartPrograms(selected = [], category = "") {
   const container = document.getElementById("part-programs-list");
   if (!state.programs.length) {
     container.innerHTML = '<p class="text-muted" style="grid-column:span 2;font-size:0.8rem;">No programs available yet.</p>';
     return;
   }
-  container.innerHTML = state.programs.map(pr => `
+  const list = category ? state.programs.filter(pr => pr.category === category) : state.programs;
+  if (!list.length) {
+    container.innerHTML = '<p class="text-muted" style="grid-column:span 2;font-size:0.8rem;">No programs in this category yet.</p>';
+    return;
+  }
+  container.innerHTML = list.map(pr => `
     <label style="display:flex;align-items:center;gap:7px;font-size:0.8rem;cursor:pointer;padding:4px 0;">
       <input type="checkbox" value="${pr.id}" ${selected.includes(pr.id) ? "checked" : ""}
         style="accent-color:var(--green-600);width:14px;height:14px;">
@@ -613,20 +612,26 @@ function populatePartPrograms(selected = []) {
     </label>`).join("");
 }
 
+document.getElementById("part-category").addEventListener("change", () => {
+  const checked = [...document.querySelectorAll("#part-programs-list input[type=checkbox]:checked")].map(cb => cb.value);
+  populatePartPrograms(checked, document.getElementById("part-category").value);
+});
+
 document.getElementById("btn-save-participant").addEventListener("click", async () => {
   clearErrors("form-participant");
-  const name   = document.getElementById("part-name").value.trim();
-  const teamId = document.getElementById("part-team").value;
-  let valid    = true;
-  if (!name)   { showError("part-name-err"); document.getElementById("part-name").classList.add("error"); valid = false; }
-  if (!teamId) { showError("part-team-err"); document.getElementById("part-team").classList.add("error"); valid = false; }
+  const name     = document.getElementById("part-name").value.trim();
+  const teamId   = document.getElementById("part-team").value;
+  const category = document.getElementById("part-category").value;
+  let valid = true;
+  if (!name)     { showError("part-name-err");     document.getElementById("part-name").classList.add("error"); valid = false; }
+  if (!teamId)   { showError("part-team-err");     document.getElementById("part-team").classList.add("error"); valid = false; }
+  if (!category) { showError("part-category-err"); document.getElementById("part-category").classList.add("error"); valid = false; }
   if (!valid) return;
 
   const progIds = [...document.querySelectorAll("#part-programs-list input[type=checkbox]:checked")].map(cb => cb.value);
   const id   = document.getElementById("part-id").value;
   const data = {
-    name, teamId,
-    grade:    document.getElementById("part-grade").value.trim(),
+    name, teamId, category,
     contact:  document.getElementById("part-contact").value.trim(),
     programs: progIds
   };
@@ -666,11 +671,6 @@ function renderResults() {
   const search = document.getElementById("result-search").value.toLowerCase();
   const catF   = document.getElementById("result-filter-cat").value;
   const statF  = document.getElementById("result-filter-status").value;
-
-  const cats   = [...new Set(state.programs.map(p => p.category))].sort();
-  const catSel = document.getElementById("result-filter-cat");
-  const cv     = catSel.value;
-  catSel.innerHTML = '<option value="">All Categories</option>' + cats.map(c => `<option ${cv === c ? "selected" : ""}>${esc(c)}</option>`).join("");
 
   const filtered = state.programs.filter(p => {
     const r = state.results.find(r => r.id === p.id || r.programId === p.id);

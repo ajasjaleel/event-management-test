@@ -212,7 +212,13 @@
                 <input type="text" id="prog-search" placeholder="Search programs…">
               </div>
               <div class="filter-row">
-                <select id="prog-filter-cat"><option value="">All Categories</option></select>
+                <select id="prog-filter-cat">
+                  <option value="">All Categories</option>
+                  <option>Sub Junior</option>
+                  <option>Junior</option>
+                  <option>Senior</option>
+                  <option>General</option>
+                </select>
                 <select id="prog-filter-type">
                   <option value="">All Types</option>
                   <option>Individual</option>
@@ -221,7 +227,7 @@
                 </select>
               </div>
             </div>
-            <div class="table-wrap">
+            <div class="table-wrap" style="max-height:480px;overflow-y:auto;">
               <table class="data-table">
                 <thead><tr>
                   <th>#</th><th>Program Name</th><th>Category</th>
@@ -288,7 +294,7 @@
               <table class="data-table">
                 <thead><tr>
                   <th>#</th><th>Name</th><th>Team</th>
-                  <th>Grade</th><th>Enrolled Programs</th><th>Actions</th>
+                  <th>Category</th><th>Enrolled Programs</th><th>Actions</th>
                 </tr></thead>
                 <tbody id="participants-tbody"></tbody>
               </table>
@@ -319,7 +325,13 @@
                 <input type="text" id="result-search" placeholder="Search programs…">
               </div>
               <div class="filter-row">
-                <select id="result-filter-cat"><option value="">All Categories</option></select>
+                <select id="result-filter-cat">
+                  <option value="">All Categories</option>
+                  <option>Sub Junior</option>
+                  <option>Junior</option>
+                  <option>Senior</option>
+                  <option>General</option>
+                </select>
                 <select id="result-filter-status">
                   <option value="">All Status</option>
                   <option value="pending">Pending</option>
@@ -441,7 +453,13 @@
           </div>
           <div class="form-group">
             <label>Category *</label>
-            <input type="text" class="form-control" id="prog-cat" placeholder="e.g. General Arts" list="cat-suggestions">
+            <select class="form-control" id="prog-cat">
+              <option value="">Select category…</option>
+              <option>Sub Junior</option>
+              <option>Junior</option>
+              <option>Senior</option>
+              <option>General</option>
+            </select>
             <span class="field-error" id="prog-cat-err">Category is required.</span>
           </div>
           <div class="form-group">
@@ -535,15 +553,22 @@
             <span class="field-error" id="part-team-err">Team is required.</span>
           </div>
           <div class="form-group">
-            <label>Grade / Class</label>
-            <input type="text" class="form-control" id="part-grade" placeholder="e.g. 10A">
+            <label>Category *</label>
+            <select class="form-control" id="part-category">
+              <option value="">Select category…</option>
+              <option>Sub Junior</option>
+              <option>Junior</option>
+              <option>Senior</option>
+              <option>General</option>
+            </select>
+            <span class="field-error" id="part-category-err">Category is required.</span>
           </div>
           <div class="form-group">
             <label>Contact / Phone</label>
             <input type="text" class="form-control" id="part-contact" placeholder="Optional">
           </div>
           <div class="form-group span-2">
-            <label>Enroll in Programs</label>
+            <label>Enroll in Programs <span class="text-muted" style="font-weight:400;">(filtered by category)</span></label>
             <div id="part-programs-list"
               style="max-height:180px;overflow-y:auto;border:1px solid var(--slate-200);border-radius:var(--radius);padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px;">
               <p class="text-muted" style="grid-column:span 2;">Loading programs…</p>
